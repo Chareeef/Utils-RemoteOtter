@@ -15,25 +15,24 @@ const remotiveUrls = [];
 let createdJobsCount = 0;
 let skippedJobsCount = 0;
 
+// Sleep function
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 async function downloadImage(url, filepath) {
   try {
-    const response = await axios.get("https://api.scrapingdog.com/scrape", {
-      params: {
-        api_key: "672614849f1278e6126cb608",
-        url,
-        dynamic: "false",
-      },
-      responseType: "arraybuffer",
+    const response = await axios({
+      url,
+      method: "GET",
+      responseType: "stream",
     });
 
-    // Create a write stream to save the image
     const writer = fs.createWriteStream(filepath);
 
-    // Write the binary data to the file
-    writer.write(response.data);
-    writer.end();
-
-    console.log("Image downloaded", filepath);
+    response.data.pipe(writer);
 
     return new Promise((resolve, reject) => {
       writer.on("finish", resolve);
@@ -44,16 +43,10 @@ async function downloadImage(url, filepath) {
   }
 }
 
-async function getApplyUrl(url) {
+async function getApplyUrl(url, sleepTime = 2) {
   try {
     // Get the job page
-    const response = await axios.get("https://api.scrapingdog.com/scrape", {
-      params: {
-        api_key: "672614849f1278e6126cb608",
-        url,
-        dynamic: "false",
-      },
-    });
+    const response = await axios.get(url);
     const html = response.data;
     const $ = cheerio.load(html);
 
@@ -70,6 +63,16 @@ async function getApplyUrl(url) {
     return applyUrl;
   } catch (error) {
     console.error("Error fetching apply url:", error.status);
+
+    if (error.status === 429 && sleepTime < 10) {
+      //  Sleep
+      console.log(`Too many requests, sleeping for ${sleepTime} minutes...`);
+      await sleep(sleepTime * 60 * 1000);
+      return getApplyUrl(url, sleepTime + 1);
+    } else if (error.status === 429) {
+      return -1;
+    }
+
     return null;
   }
 }
@@ -78,19 +81,12 @@ async function getJobs() {
   console.log("\n-----------------------\n");
   console.log(`Fetching jobs...`);
 
-  // Get jobs
-  // const response = await axios.get(
-  //   `https://remotive.com/api/remote-jobs?category=${slug}`,
-  // );
-
   try {
-    const response = await axios.get("https://api.scrapingdog.com/scrape", {
-      params: {
-        api_key: "672614849f1278e6126cb608",
-        url: "https://remotive.com/api/remote-jobs",
-        dynamic: "false",
-      },
-    });
+    // Get jobs
+    const response = await axios.get(`https://remotive.com/api/remote-jobs`);
+
+    // Sleep
+    await sleep(600);
 
     // Get jobs
     const jobs = response.data.jobs;
@@ -126,15 +122,6 @@ async function getJobs() {
           skippedJobsCount++;
           continue;
         }
-
-        // Verify if job already fetched
-        // if (fetchedJobsApplyUrls.includes(applyUrl)) {
-        //   skippedJobsCount++;
-        //   continue;
-        // }
-
-        // Add applyUrl to fetchedJobsApplyUrls
-        // fetchedJobsApplyUrls.push(applyUrl);
 
         // Verify if job already exists by checking the applyUrl in the database
         const existingJob = await prisma.job.findFirst({

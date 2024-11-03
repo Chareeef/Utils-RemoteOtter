@@ -22,21 +22,37 @@ async function downloadImageOriginal(url, filepath) {
   }
 }
 
-async function downloadImage(url, filepath) {
+async function downloadImage(targetUrl, filepath) {
+  const apiKey = "D0xVwj1tPIth9CLS8uHKwDP3BbUJ2Ij4";
+  const url = "https://api.webscrapingapi.com/v2";
+
   try {
-    const response = await axios("https://api.scrapingdog.com/scrape", {
+    const response = await axios.get(url, {
       params: {
-        api_key: "672614849f1278e6126cb608",
-        url,
-        dynamic: "false",
+        api_key: apiKey,
+        url: targetUrl,
       },
-      responseType: "bufferarray",
     });
 
-    fs.writeFileSync(filepath, response.data);
-    console.log("Image downloaded", filepath);
+    // Step 1: Remove the `data:image/png;base64,` prefix
+    const base64Data = response.data.base64_string.replace(
+      /^data:image\/\w+;base64,/,
+      "",
+    );
+
+    // Step 2: Convert the Base64 string to a binary buffer
+    const imageBuffer = Buffer.from(base64Data, "base64");
+
+    // Step 3: Write the buffer to a file
+    fs.writeFile("output.png", imageBuffer, (err) => {
+      if (err) {
+        console.error("Error writing image file:", err);
+      } else {
+        console.log("Image file saved as output.png");
+      }
+    });
   } catch (error) {
-    console.error("Error downloading the image:", error);
+    console.error("Error:", error);
   }
 }
 
