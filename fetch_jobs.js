@@ -157,7 +157,7 @@ async function getJobs() {
           .replace("&amp;", "&")
           .replace("&#39;", "'")
           .replace(new RegExp("&.*;", "g"), "_");
-        const filepath = `./companies/${companyName}.jpg`;
+        const filepath = `/companies/${companyName}.jpg`;
         await downloadImage(job.company_logo, filepath);
         const isRemotiveLogo = await compareRemotiveLogo(filepath);
         let companyLogo = "";
@@ -184,7 +184,6 @@ async function getJobs() {
           remotiveUrl: job.url,
         };
 
-        console.log("Job url:", jobInfo.applyUrl);
         await prisma.job.create({ data: jobInfo });
         console.log("Job created:", jobInfo.title);
         createdJobsCount++;
