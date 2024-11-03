@@ -14,6 +14,7 @@ const remotiveUrls = [];
 // Created and skipped jobs count
 let createdJobsCount = 0;
 let skippedJobsCount = 0;
+let requestsCount = 0;
 
 // Sleep function
 function sleep(ms) {
@@ -24,29 +25,42 @@ function sleep(ms) {
 
 async function downloadImage(url, filepath) {
   try {
-    const response = await axios({
-      url,
-      method: "GET",
+    const response = await axios("https://api.scrapingdog.com/scrape", {
+      params: {
+        api_key: "672614849f1278e6126cb608",
+        url,
+        dynamic: "false",
+      },
       responseType: "stream",
     });
+    requestsCount++;
 
     const writer = fs.createWriteStream(filepath);
 
     response.data.pipe(writer);
 
+    console.log("Image downloaded", filepath);
     return new Promise((resolve, reject) => {
       writer.on("finish", resolve);
       writer.on("error", reject);
     });
   } catch (error) {
-    console.error("Error downloading the image:", error.status);
+    console.error("Error downloading the image:", error);
   }
 }
 
 async function getApplyUrl(url, sleepTime = 2) {
   try {
     // Get the job page
-    const response = await axios.get(url);
+    const response = await axios("https://api.scrapingdog.com/scrape", {
+      params: {
+        api_key: "672614849f1278e6126cb608",
+        url,
+        dynamic: "false",
+      },
+    });
+    requestsCount++;
+
     const html = response.data;
     const $ = cheerio.load(html);
 
@@ -83,10 +97,14 @@ async function getJobs() {
 
   try {
     // Get jobs
-    const response = await axios.get(`https://remotive.com/api/remote-jobs`);
-
-    // Sleep
-    await sleep(600);
+    const response = await axios("https://api.scrapingdog.com/scrape", {
+      params: {
+        api_key: "672614849f1278e6126cb608",
+        url: "https://remotive.com/api/remote-jobs",
+        dynamic: "false",
+      },
+    });
+    requestsCount++;
 
     // Get jobs
     const jobs = response.data.jobs;
@@ -118,7 +136,6 @@ async function getJobs() {
           applyUrl.startsWith("https://remotive.com") ||
           applyUrl.startsWith("https://www.remotive.com")
         ) {
-          console.log(`Inacceptable applyUrl: ${applyUrl}, skipping...`);
           skippedJobsCount++;
           continue;
         }
@@ -172,7 +189,7 @@ async function getJobs() {
         console.log("Job created:", jobInfo.title);
         createdJobsCount++;
       } catch (error) {
-        console.error("Error:", error);
+        skippedJobsCount++;
       }
     }
     return jobs;
@@ -225,7 +242,7 @@ async function main() {
     (endTime - startTime) / 60000,
     " minutes",
   );
-  console.log("Total requests count: ", remotiveUrls.length);
+  console.log("Requests count: ", requestsCount);
   console.log("Skipped jobs count: ", skippedJobsCount);
   console.log("Created jobs count: ", createdJobsCount);
   console.log("Jobs currently in database: ", jobs.length);
