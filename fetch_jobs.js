@@ -16,6 +16,9 @@ let createdJobsCount = 0;
 let skippedJobsCount = 0;
 let requestsCount = 0;
 
+// scrapingdog API key
+const api_key = "672614849f1278e6126cb608";
+
 // Sleep function
 function sleep(ms) {
   return new Promise((resolve) => {
@@ -27,7 +30,7 @@ async function downloadImage(url, filepath) {
   try {
     const response = await axios("https://api.scrapingdog.com/scrape", {
       params: {
-        api_key: "672614849f1278e6126cb608",
+        api_key,
         url,
         dynamic: "false",
       },
@@ -54,11 +57,12 @@ async function getApplyUrl(url, sleepTime = 2) {
     // Get the job page
     const response = await axios("https://api.scrapingdog.com/scrape", {
       params: {
-        api_key: "672614849f1278e6126cb608",
+        api_key,
         url,
         dynamic: "false",
       },
     });
+    console.log(`Fetching apply url... ${url}`);
     requestsCount++;
 
     const html = response.data;
@@ -99,7 +103,7 @@ async function getJobs() {
     // Get jobs
     const response = await axios("https://api.scrapingdog.com/scrape", {
       params: {
-        api_key: "672614849f1278e6126cb608",
+        api_key,
         url: "https://remotive.com/api/remote-jobs",
         dynamic: "false",
       },
@@ -111,7 +115,20 @@ async function getJobs() {
 
     for (const job of jobs) {
       try {
+        // Skip if the job url is blacklisted
+        const blacklistedUrl = await prisma.blackListUrl.findFirst({
+          where: { url: job.url },
+        });
+
+        if (blacklistedUrl) {
+          skippedJobsCount++;
+          continue;
+        }
+
+        // Add remotive url
         remotiveUrls.push(job.url);
+
+        // Check if job already exists
         const jobExists = await prisma.job.findFirst({
           where: { remotiveUrl: job.url },
         });
@@ -136,6 +153,12 @@ async function getJobs() {
           applyUrl.startsWith("https://remotive.com") ||
           applyUrl.startsWith("https://www.remotive.com")
         ) {
+          await prisma.blackListUrl.create({
+            data: {
+              id: uuidv4(),
+              url: job.url,
+            },
+          });
           skippedJobsCount++;
           continue;
         }
@@ -148,6 +171,13 @@ async function getJobs() {
         });
 
         if (existingJob) {
+          console.log("Skipping job with existing applyUrl:", applyUrl);
+          await prisma.blackListUrl.create({
+            data: {
+              id: uuidv4(),
+              url: job.url,
+            },
+          });
           skippedJobsCount++;
           continue;
         }
@@ -207,7 +237,7 @@ async function flagJobsAvailability(jobs) {
           id: job.id,
         },
         data: {
-          isOpen: remotiveUrls.includes(job.applyUrl) ? true : false,
+          isOpen: remotiveUrls.includes(job.remotiveUrl) ? true : false,
         },
       });
     }

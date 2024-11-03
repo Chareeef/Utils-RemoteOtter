@@ -26,6 +26,13 @@ model Job {
   @@map("jobs") // Keep the table name as "jobs"
 }
 
+model BlackListUrl {
+  id   String @id @default(uuid())
+  url  String
+
+  @@map("black_list_urls")
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
