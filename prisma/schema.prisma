@@ -1,0 +1,61 @@
+datasource db {
+  provider = "postgresql" // or another provider, e.g., "mysql" or "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Job {
+  id              String      @id @default(uuid())
+  title           String
+  category        String
+  companyName     String   @map("company_name")
+  companyLogo     String?  @map("company_logo")
+  description     String
+  publicationDate DateTime @default(now()) @map("publication_date")
+  createdAt       DateTime @default(now()) @map("created_at")
+  applyUrl        String   @unique @map("apply_url")
+  remotiveUrl     String?  @unique @map("remotive_url")
+  isOpen          Boolean  @default(true) @map("is_open")
+  location        String?
+  jobType         String?  @map("job_type")
+  salary          String?
+
+  @@map("jobs") // Keep the table name as "jobs"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  bio           String?
+
+  accounts Account[]
+
+  @@map("users")
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?   @db.Text
+  access_token       String?   @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?   @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}

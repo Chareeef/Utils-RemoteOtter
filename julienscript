@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Replace with your actual Scraping Dog API key
+API_KEY="672614849f1278e6126cb608"
+
+# The image URL you want to download
+IMAGE_URL="https://remotive.com/job/1927858/logo"
+
+# The filename to save the downloaded image
+FILENAME="downloaded_image.jpg"
+
+# Scraping Dog API endpoint for images
+API_ENDPOINT="https://api.scrapingdog.com/image"
+
+# URL-encode the image URL
+ENCODED_IMAGE_URL=$(python3 -c "import urllib.parse; print(urllib.parse.quote('''$IMAGE_URL'''))")
+
+# Build the full API URL
+API_URL="${API_ENDPOINT}?api_key=${API_KEY}&url=${ENCODED_IMAGE_URL}"
+
+# Make the HTTP request and capture the HTTP status code
+HTTP_STATUS=$(curl -sSL -w "%{http_code}" -o "$FILENAME" "$API_URL")
+
+# Verify that the request was successful
+if [ "$HTTP_STATUS" -eq 200 ]; then
+    echo "Image downloaded successfully and saved as $FILENAME"
+else
+    echo "Failed to download image. HTTP Status Code: $HTTP_STATUS"
+    rm -f "$FILENAME"
+fi
