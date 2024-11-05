@@ -4,6 +4,7 @@ const cheerio = require("cheerio");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
 const { compareRemotiveLogo } = require("./compareRemotiveLogo");
+const { capitalizeWords } = require("./capTags");
 
 // Get the prisma client
 const prisma = new PrismaClient();
@@ -17,7 +18,7 @@ let skippedJobsCount = 0;
 let requestsCount = 0;
 
 // scrapingdog API key
-const api_key = "672614849f1278e6126cb608";
+const api_key = process.env.SCRAPINGDOG_API_KEY;
 
 // Sleep function
 function sleep(ms) {
@@ -76,6 +77,7 @@ async function getApplyUrl(url, sleepTime = 2) {
       .attr("href")
       .replace("utm_source=remotive.com", "utm_source=remoteotter.com")
       .replace("ref=remotive.com", "ref=remoteotter.com");
+    console.log("Apply url: ", applyUrl);
 
     // Return the apply url
     return applyUrl;
@@ -153,6 +155,7 @@ async function getJobs() {
           applyUrl.startsWith("https://remotive.com") ||
           applyUrl.startsWith("https://www.remotive.com")
         ) {
+          console.log("blacklisted applyUrl: ", applyUrl);
           await prisma.blackListUrl.create({
             data: {
               id: uuidv4(),
@@ -212,6 +215,8 @@ async function getJobs() {
           salary: job.salary,
           applyUrl: applyUrl,
           remotiveUrl: job.url,
+          originalLogoUrl: job.company_logo,
+          tags: capitalizeWords(job.tags),
         };
 
         await prisma.job.create({ data: jobInfo });
@@ -231,6 +236,7 @@ async function flagJobsAvailability(jobs) {
   // Update the availability of each job in the database
   try {
     console.log("Flagging jobs availability...");
+    console.log(remotiveUrls.length);
     for (const job of jobs) {
       await prisma.job.update({
         where: {

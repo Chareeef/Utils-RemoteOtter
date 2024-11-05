@@ -13,6 +13,7 @@ model Job {
   category        String
   companyName     String   @map("company_name")
   companyLogo     String?  @map("company_logo")
+  originalLogoUrl String?  @map("original_logo_url")
   description     String
   publicationDate DateTime @default(now()) @map("publication_date")
   createdAt       DateTime @default(now()) @map("created_at")
@@ -22,6 +23,7 @@ model Job {
   location        String?
   jobType         String?  @map("job_type")
   salary          String?
+  tags            String[]
 
   @@map("jobs") // Keep the table name as "jobs"
 }
