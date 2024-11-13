@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "jobs" ALTER COLUMN "tags" SET DEFAULT ARRAY[]::TEXT[];

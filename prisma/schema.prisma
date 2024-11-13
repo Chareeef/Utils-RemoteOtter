@@ -23,7 +23,7 @@ model Job {
   location        String?
   jobType         String?  @map("job_type")
   salary          String?
-  tags            String[]
+  tags            String[] @default([])
 
   @@map("jobs") // Keep the table name as "jobs"
 }
@@ -67,4 +67,14 @@ model Account {
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
+}
+
+model Subscription {
+  id            String  @id @default(cuid())
+  email         String
+  name          String
+  query         String
+  createdAt     DateTime @default(now())
+
+  @@map("subscriptions")
 }

@@ -77,7 +77,6 @@ async function getApplyUrl(url, sleepTime = 2) {
       .attr("href")
       .replace("utm_source=remotive.com", "utm_source=remoteotter.com")
       .replace("ref=remotive.com", "ref=remoteotter.com");
-    console.log("Apply url: ", applyUrl);
 
     // Return the apply url
     return applyUrl;
@@ -236,7 +235,6 @@ async function flagJobsAvailability(jobs) {
   // Update the availability of each job in the database
   try {
     console.log("Flagging jobs availability...");
-    console.log(remotiveUrls.length);
     for (const job of jobs) {
       await prisma.job.update({
         where: {

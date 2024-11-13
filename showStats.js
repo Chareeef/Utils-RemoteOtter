@@ -50,4 +50,14 @@ async function main() {
   await prisma.$disconnect();
 }
 
-main();
+async function logEmails() {
+  const prisma = new PrismaClient();
+  const users = await prisma.user.findMany();
+
+  for (const user of users) {
+    console.log(user.email);
+  }
+  console.log(users.length);
+  await prisma.$disconnect();
+}
+logEmails();
