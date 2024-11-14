@@ -85,7 +85,7 @@ function getParams(url) {
     .map((type) => jobDict[type])
     .join("/");
   const location = countries.find(
-    (country) => queryParams.get("location") === country.id,
+    (country) => queryParams.get("location")?.toLowerCase() === country.id,
   )?.name;
 
   return {
@@ -108,7 +108,9 @@ async function main() {
           "2ac367c60037093f7a5021975951e31fb94dfb8d0e83aeb60d6a4aa8cc996987",
       },
     });
-    const jobs = await response.json();
+    let jobs = await response.json();
+    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+    jobs = jobs.filter((job) => new Date(job.publicationDate) > twoDaysAgo);
     if (jobs.length === 0) {
       console.log(
         `No jobs found for query: ${query}, location: ${location}, categories: ${categories}, jobTypes: ${jobTypes}`,
@@ -118,7 +120,7 @@ async function main() {
     const mailOptions = {
       from: '"RemoteOtter Team" <team@remoteotter.com>', // sender address
       to: subscription.email, // list of receivers
-      subject: "You'd Be A Perfect Fit For These Jobs! 🦦", // Subject line
+      subject: "New Jobs Just For You! Be the First to Get Noticed! 🦦", // Subject line
       text: "Your Weekly Job Alert! 🦦", // plain text body
       html: `
       <!DOCTYPE html>
@@ -278,48 +280,44 @@ async function main() {
                   <!-- DATE OF EMAIL -->
                   <p>Here are the latest job listings for <span>${formatDate(new Date())}</span>:</p>    
                   <div class="icon-texts">
-                      ${
-                        query !== ""
-                          ? `
+                      ${query !== ""
+          ? `
                         <div class="single-icon-text">
                             <p>${query}</p>
                         </div>
                       `
-                          : ""
-                      }
-                      ${
-                        categories !== ""
-                          ? `
+          : ""
+        }
+                      ${categories !== ""
+          ? `
                         <div class="single-icon-text">
                             <p>${categories}</p>
                         </div>
                         `
-                          : ""
-                      }
-                      ${
-                        location !== undefined && location !== ""
-                          ? `
+          : ""
+        }
+                      ${location !== undefined && location !== ""
+          ? `
                         <div class="single-icon-text">
                             <p>${location}</p>
                         </div>
                         `
-                          : ""
-                      }
-                      ${
-                        jobTypes !== ""
-                          ? `
+          : ""
+        }
+                      ${jobTypes !== ""
+          ? `
                       <div class="single-icon-text">
                           <p>${jobTypes}</p>
                       </div>
                       `
-                          : ""
-                      }
+          : ""
+        }
                   </div>
 
                   <div class="job-list">
                   ${jobs
-                    .map(
-                      (job) => `
+          .map(
+            (job) => `
                     
                     <a href="https://remoteotter.com/company/${job.companyName.replace(" ", "-")}/jobs/${job.title.replace(" ", "-")}_${job.id}" style="text-decoration:none;color:inherit;">
                           <div class="job-item">
@@ -333,12 +331,12 @@ async function main() {
                                   </div>
                                   <div class="job-tags">
                                       ${job.tags
-                                        .slice(0, 4)
-                                        .map(
-                                          (tag) =>
-                                            `<div class="job-tag">${tag}</div>`,
-                                        )
-                                        .join("")}
+                .slice(0, 4)
+                .map(
+                  (tag) =>
+                    `<div class="job-tag">${tag}</div>`,
+                )
+                .join("")}
                                   </div>
                                   <div class="job-details">
                                       <div
@@ -366,8 +364,8 @@ async function main() {
                           </div>
                       </a>
                     `,
-                    )
-                    .join("")}
+          )
+          .join("")}
                   </div>
 
                   <div class="footer">
