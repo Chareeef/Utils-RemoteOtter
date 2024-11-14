@@ -118,7 +118,7 @@ async function main() {
     const mailOptions = {
       from: '"RemoteOtter Team" <team@remoteotter.com>', // sender address
       to: subscription.email, // list of receivers
-      subject: "Your Weekly Job Alert! 🦦", // Subject line
+      subject: "You'd Be A Perfect Fit For These Jobs! 🦦", // Subject line
       text: "Your Weekly Job Alert! 🦦", // plain text body
       html: `
       <!DOCTYPE html>
