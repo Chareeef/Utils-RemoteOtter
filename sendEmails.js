@@ -280,46 +280,50 @@ async function main() {
                   <!-- DATE OF EMAIL -->
                   <p>Here are the latest job listings for <span>${formatDate(new Date())}</span>:</p>    
                   <div class="icon-texts">
-                      ${query !== ""
-          ? `
+                      ${
+                        query !== ""
+                          ? `
                         <div class="single-icon-text">
                             <p>${query}</p>
                         </div>
                       `
-          : ""
-        }
-                      ${categories !== ""
-          ? `
+                          : ""
+                      }
+                      ${
+                        categories !== ""
+                          ? `
                         <div class="single-icon-text">
                             <p>${categories}</p>
                         </div>
                         `
-          : ""
-        }
-                      ${location !== undefined && location !== ""
-          ? `
+                          : ""
+                      }
+                      ${
+                        location !== undefined && location !== ""
+                          ? `
                         <div class="single-icon-text">
                             <p>${location}</p>
                         </div>
                         `
-          : ""
-        }
-                      ${jobTypes !== ""
-          ? `
+                          : ""
+                      }
+                      ${
+                        jobTypes !== ""
+                          ? `
                       <div class="single-icon-text">
                           <p>${jobTypes}</p>
                       </div>
                       `
-          : ""
-        }
+                          : ""
+                      }
                   </div>
 
                   <div class="job-list">
                   ${jobs
-          .map(
-            (job) => `
+                    .map(
+                      (job) => `
                     
-                    <a href="https://remoteotter.com/company/${job.companyName.replace(" ", "-")}/jobs/${job.title.replace(" ", "-")}_${job.id}" style="text-decoration:none;color:inherit;">
+                    <a href="https://remoteotter.com/company/${job.companyName.replace(/[\/#\s]/g, "-")}/jobs/${job.title.replace(/[\/#\s]/g, "-")}_${job.id}" style="text-decoration:none;color:inherit;">
                           <div class="job-item">
                               <img src="https://remoteotter.com${job.companyLogo.replaceAll(" ", "%20").replaceAll(",", "%2C")}" class="job-image" />
                               <div style="width:100%;">
@@ -331,12 +335,12 @@ async function main() {
                                   </div>
                                   <div class="job-tags">
                                       ${job.tags
-                .slice(0, 4)
-                .map(
-                  (tag) =>
-                    `<div class="job-tag">${tag}</div>`,
-                )
-                .join("")}
+                                        .slice(0, 4)
+                                        .map(
+                                          (tag) =>
+                                            `<div class="job-tag">${tag}</div>`,
+                                        )
+                                        .join("")}
                                   </div>
                                   <div class="job-details">
                                       <div
@@ -364,8 +368,8 @@ async function main() {
                           </div>
                       </a>
                     `,
-          )
-          .join("")}
+                    )
+                    .join("")}
                   </div>
 
                   <div class="footer">
