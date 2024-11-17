@@ -275,7 +275,7 @@ async function main() {
               </div>
               <div class="container">
                   <!-- NAME OF USER -->
-                  <h1 class="title">Hello ${subscription.name},</h1>
+                  <h1 class="title">Hello Job Hunter,</h1>
 
                   <!-- DATE OF EMAIL -->
                   <p>Here are the latest job listings for <span>${formatDate(new Date())}</span>:</p>    
