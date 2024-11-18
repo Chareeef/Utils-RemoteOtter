@@ -263,6 +263,7 @@ async function main() {
               }
 
               .unsubscribe {
+                  color: rgb(210, 107, 67);
                   font-size: small;
               }
           </style>
@@ -375,7 +376,7 @@ async function main() {
                   <div class="footer">
                       <p>Best of luck with your applications!</p>
                       <p>RemoteOtter Team</p>
-                      <a href="https://remoteotter.com/unsubscribe/${subscription.id}" class="unsubscribe">unsubscribe</a>
+                      <a href="https://remoteotter.com/unsubscribe/${subscription.id}" class="unsubscribe">Unsubscribe</a>
                   </div>
               </div>
           </div>
