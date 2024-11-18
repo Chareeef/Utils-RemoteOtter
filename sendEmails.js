@@ -1,6 +1,8 @@
 const { PrismaClient } = require("@prisma/client");
 const nodemailer = require("nodemailer");
 const countries = require("./countries");
+const hashEmailHMAC = require("./hashEmail");
+
 // Configure the transporter
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com", // Replace with your SMTP host
@@ -102,6 +104,7 @@ async function main() {
     const { query, location, categories, jobTypes } = getParams(
       subscription.query,
     );
+    const isFiltered = query || location || categories || jobTypes;
     const response = await fetch(subscription.query, {
       headers: {
         "X-API-KEY":
@@ -110,7 +113,9 @@ async function main() {
     });
     let jobs = await response.json();
     const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
-    jobs = jobs.filter((job) => new Date(job.publicationDate) > twoDaysAgo);
+    jobs = jobs
+      .filter((job) => new Date(job.publicationDate) > twoDaysAgo)
+      .slice(0, 5);
     if (jobs.length === 0) {
       console.log(
         `No jobs found for query: ${query}, location: ${location}, categories: ${categories}, jobTypes: ${jobTypes}`,
@@ -279,7 +284,10 @@ async function main() {
                   <h1 class="title">Hello Job Hunter,</h1>
 
                   <!-- DATE OF EMAIL -->
-                  <p>Here are the latest job listings for <span>${formatDate(new Date())}</span>:</p>    
+                  <p>Here are ${isFiltered ? "" : "all"} the latest job listings for <span>${formatDate(new Date())}</span>:</p>   
+                  ${
+                    isFiltered
+                      ? `
                   <div class="icon-texts">
                       ${
                         query !== ""
@@ -318,6 +326,9 @@ async function main() {
                           : ""
                       }
                   </div>
+                  `
+                      : ""
+                  }
 
                   <div class="job-list">
                   ${jobs
@@ -376,7 +387,7 @@ async function main() {
                   <div class="footer">
                       <p>Best of luck with your applications!</p>
                       <p>RemoteOtter Team</p>
-                      <a href="https://remoteotter.com/unsubscribe/${subscription.id}" class="unsubscribe">Unsubscribe</a>
+                    <a href="https://remoteotter.com/subscriptions/${hashEmailHMAC(subscription.email)}" class="unsubscribe">Manage Subscriptions</a>
                   </div>
               </div>
           </div>

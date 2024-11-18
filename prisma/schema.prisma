@@ -72,9 +72,9 @@ model Account {
 model Subscription {
   id            String  @id @default(cuid())
   email         String
-  name          String
   query         String
   createdAt     DateTime @default(now())
+  emailHash     String   @default(cuid()) @map("email_hash")
 
   @@map("subscriptions")
 }
