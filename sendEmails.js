@@ -118,7 +118,7 @@ async function main() {
       .slice(0, 5);
     if (jobs.length === 0) {
       console.log(
-        `No jobs found for query: ${query}, location: ${location}, categories: ${categories}, jobTypes: ${jobTypes}`,
+        `${subscription.email}: No jobs found for query: ${query}, location: ${location}, categories: ${categories}, jobTypes: ${jobTypes}`,
       );
       continue;
     }
@@ -267,6 +267,21 @@ async function main() {
                   display: inline-block;
               }
 
+              .view-more-jobs {
+                text-align: center;
+                margin-top: 20px;
+              }
+              .view-more-jobs a{
+                color: rgb(210, 107, 67);
+                font-style: italic;
+                font-size: small;
+              }
+              hr {
+                  border: none;
+                  border-top: 1px solid #fff;
+                  width: 50%;
+                  margin: 20px auto;
+              }
               .unsubscribe {
                   color: rgb(210, 107, 67);
                   font-size: small;
@@ -382,11 +397,17 @@ async function main() {
                     `,
                     )
                     .join("")}
+
+                    <div class="view-more-jobs">
+                      <a href="${subscription.query.replace("api/get_jobs", "")}">View More Jobs</a>
+                    </div>
                   </div>
+
+                  <hr />
 
                   <div class="footer">
                       <p>Best of luck with your applications!</p>
-                      <p>RemoteOtter Team</p>
+                      <p>RemoteOtter Team 🦦</p>
                     <a href="https://remoteotter.com/subscriptions/${hashEmailHMAC(subscription.email)}" class="unsubscribe">Manage Subscriptions</a>
                   </div>
               </div>
@@ -402,7 +423,12 @@ async function main() {
       if (error) {
         return console.log("Error sending email:", error);
       }
-      console.log("Email sent:", info.response);
+      console.log(
+        "Email sent:",
+        info.response,
+        subscription.email,
+        `with query: ${subscription.query}, categories: ${subscription.categories}, jobTypes: ${subscription.jobTypes}, location: ${subscription.location}`,
+      );
     });
   }
 
