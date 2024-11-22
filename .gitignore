@@ -6,4 +6,5 @@ __pycache__
 mypy
 venv
 logs/*
+companies
 .env
